@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring Perilaku Makan & Minum Sapi Perah Berbasis CCTV</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            darker: '#081c15',
+                            dark: '#1b4332',
+                            primary: '#2d6a4f',
+                            medium: '#40916c',
+                            light: '#74c69d',
+                            accent: '#d8f3dc',
+                            blue: '#0284c7',
+                            bluedark: '#0369a1',
+                            bluelight: '#e0f2fe'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom animations & glow effects */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        
+        .card-glow:hover {
+            box-shadow: 0 20px 25px -5px rgba(45, 106, 79, 0.15), 0 8px 10px -6px rgba(45, 106, 79, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .pulse-red {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            animation: pulse-red-anim 1.8s infinite;
+        }
+
+        @keyframes pulse-red-anim {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .bg-grid-pattern {
+            background-size: 30px 30px;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+        }
+
+        /* Smooth Movement Transition for Cow Head Simulation */
+        #cowHead {
+            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-brand-primary selection:text-white">
+
+    <!-- NAVBAR -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-brand-darker/90 backdrop-blur-md border-b border-brand-primary/30 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-brand-primary flex items-center justify-center text-white font-bold shadow-md shadow-brand-primary/40">
+                    <i class="fa-solid me-0.5 fa-video"></i>
+                </div>
+                <div>
+                    <span class="font-bold text-base tracking-wide block leading-none">SmartDairy <span class="text-brand-light">Vision</span></span>
+                    <span class="text-[10px] text-emerald-300/80 font-mono">Precision Livestock Farming</span>
+                </div>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-6 text-sm font-medium">
+                <a href="#latar-belakang" class="hover:text-brand-light transition-colors">Latar Belakang</a>
+                <a href="#konsep" class="hover:text-brand-light transition-colors">Konsep Sistem</a>
+                <a href="#visualisasi" class="hover:text-brand-light transition-colors">Kandang ROI</a>
+                <a href="#dashboard" class="hover:text-brand-light transition-colors">Dashboard IoT</a>
+                <a href="#keunggulan" class="hover:text-brand-light transition-colors">Keunggulan</a>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    Live Simulation
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="relative pt-28 pb-20 md:pt-36 md:pb-28 bg-gradient-to-br from-brand-darker via-brand-dark to-slate-900 text-white overflow-hidden">
+        <!-- Overlay Background Pattern -->
+        <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-brand-medium/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-20 -left-20 w-80 h-80 bg-brand-blue/20 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="max-w-3xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-6">
+                    <i class="fa-solid fa-graduation-cap"></i> Ekologi dan Bionomika Ternak
+                </div>
+                
+                <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight mb-6">
+                    Monitoring Perilaku Makan dan Minum <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-200 to-cyan-300">Sapi Perah</span> Berbasis CCTV
+                </h1>
+                
+                <p class="text-slate-300 text-base sm:text-lg mb-8 leading-relaxed">
+                    Pengembangan sistem pemantauan non-invasif berbasis <span class="text-white font-semibold">Computer Vision</span> untuk mengukur frekuensi kunjungan dan durasi prehensi secara otomatis pada kandang individu.
+                </p>
+
+                <!-- Student Metadata Card -->
+                <div class="p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm mb-8 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-brand-primary to-emerald-400 flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                        <i class="fa-solid fa-user-graduate"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white text-base">Bisri Abdillah</h4>
+                        <p class="text-xs text-slate-300">NIM | 23010125420028</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-4">
+                    <a href="#dashboard" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-brand-medium hover:bg-brand-primary text-white font-bold text-sm shadow-lg shadow-brand-medium/30 transition-all hover:scale-105 active:scale-95">
+                        <i class="fa-solid fa-chart-line"></i> Lihat Dashboard Real-Time
+                    </a>
+                    <a href="#konsep" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm backdrop-blur-sm border border-white/10 transition-all">
+                        <i class="fa-solid fa-network-wired"></i> Pelajari Konsep
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- LATAR BELAKANG -->
+    <section id="latar-belakang" class="py-20 bg-slate-100/70">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-14">
+                <span class="text-brand-primary font-bold text-xs uppercase tracking-widest block mb-2">Permasalahan & Peluang</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Mengapa Perlu Computer Vision?</h2>
+                <div class="w-16 h-1 bg-brand-primary mx-auto mt-3 rounded-full"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="glass-card p-8 rounded-2xl shadow-sm border border-slate-200 card-glow transition-all">
+                    <div class="w-14 h-14 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-2xl mb-6">
+                        <i class="fa-solid fa-clipboard-user"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Pengamatan Manual</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Metode konvensional mengandalkan pencatatan langsung oleh peternak atau peneliti, yang bersifat subjektif dan tidak dapat dilakukan secara continuous 24/7.
+                    </p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="glass-card p-8 rounded-2xl shadow-sm border border-slate-200 card-glow transition-all">
+                    <div class="w-14 h-14 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-2xl mb-6">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Tinggi Biaya & Tenaga</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Membutuhkan alokasi jam kerja yang besar dan tenaga kerja intensif, sehingga membatasi kapasitas sampel dan efisiensi operasional peternakan.
+                    </p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="glass-card p-8 rounded-2xl shadow-sm border border-slate-200 card-glow transition-all">
+                    <div class="w-14 h-14 rounded-xl bg-brand-bluelight text-brand-blue flex items-center justify-center text-2xl mb-6">
+                        <i class="fa-solid fa-video-slash"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">CCTV Belum Optimal</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Banyak kandang telah dilengkapi CCTV, namun rekaman umumnya hanya menjadi arsip pasif dan belum diolah secara otomatis menjadi data kuantitatif perilaku.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- KONSEP SISTEM FLOWCHART -->
+    <section id="konsep" class="py-20 bg-white border-y border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <span class="text-brand-primary font-bold text-xs uppercase tracking-widest block mb-2">Alur Kerja Otomasi</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Konsep Pemrosesan Sistem</h2>
+                <p class="text-slate-600 text-sm mt-2">Integrasi perekaman video hingga menjadi wawasan perilaku digital</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 relative">
+                <!-- Step 1 -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center relative group hover:border-brand-primary transition-all">
+                    <div class="w-12 h-12 mx-auto rounded-full bg-brand-dark text-white flex items-center justify-center text-xl font-bold mb-4 shadow-md group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-camera-web"></i>
+                    </div>
+                    <span class="text-[10px] uppercase font-mono tracking-wider text-brand-primary font-bold block mb-1">Tahap 01</span>
+                    <h4 class="font-bold text-slate-800 text-base mb-1">CCTV Stream</h4>
+                    <p class="text-xs text-slate-500">Kamera overhead mengawasi arena kandang individu secara kontinu.</p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center relative group hover:border-brand-primary transition-all">
+                    <div class="w-12 h-12 mx-auto rounded-full bg-brand-primary text-white flex items-center justify-center text-xl font-bold mb-4 shadow-md group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-bullseye"></i>
+                    </div>
+                    <span class="text-[10px] uppercase font-mono tracking-wider text-brand-primary font-bold block mb-1">Tahap 02</span>
+                    <h4 class="font-bold text-slate-800 text-base mb-1">Deteksi Kepala</h4>
+                    <p class="text-xs text-slate-500">Model AI / Computer Vision mendeteksi posisi koordinat kepala sapi.</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center relative group hover:border-brand-primary transition-all">
+                    <div class="w-12 h-12 mx-auto rounded-full bg-brand-medium text-white flex items-center justify-center text-xl font-bold mb-4 shadow-md group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-draw-polygon"></i>
+                    </div>
+                    <span class="text-[10px] uppercase font-mono tracking-wider text-brand-primary font-bold block mb-1">Tahap 03</span>
+                    <h4 class="font-bold text-slate-800 text-base mb-1">ROI Pakan & Minum</h4>
+                    <p class="text-xs text-slate-500">Pemetaan zona virtual (ROI) tempat pakan (hijau) & tempat minum (biru).</p>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center relative group hover:border-brand-primary transition-all">
+                    <div class="w-12 h-12 mx-auto rounded-full bg-brand-blue text-white flex items-center justify-center text-xl font-bold mb-4 shadow-md group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-calculator"></i>
+                    </div>
+                    <span class="text-[10px] uppercase font-mono tracking-wider text-brand-blue font-bold block mb-1">Tahap 04</span>
+                    <h4 class="font-bold text-slate-800 text-base mb-1">Analisis Perilaku</h4>
+                    <p class="text-xs text-slate-500">Perhitungan frekuensi durasi prehensi berdasarkan waktu tinggal di ROI.</p>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center relative group hover:border-brand-primary transition-all">
+                    <div class="w-12 h-12 mx-auto rounded-full bg-emerald-600 text-white flex items-center justify-center text-xl font-bold mb-4 shadow-md group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-desktop"></i>
+                    </div>
+                    <span class="text-[10px] uppercase font-mono tracking-wider text-emerald-600 font-bold block mb-1">Tahap 05</span>
+                    <h4 class="font-bold text-slate-800 text-base mb-1">Dashboard Otomatis</h4>
+                    <p class="text-xs text-slate-500">Data terorganisir ditampilkan secara real-time untuk pengambilan keputusan.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VISUALISASI KANDANG INDIVIDU (INTERACTIVE BARN SIMULATOR) -->
+    <section id="visualisasi" class="py-20 bg-slate-900 text-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-10">
+                <div>
+                    <span class="text-emerald-400 font-bold text-xs uppercase tracking-widest block mb-2">Simulasi Computer Vision</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Visualisasi Kandang Individu & ROI</h2>
+                    <p class="text-slate-400 text-sm mt-1">Pemetaan Region of Interest (ROI) berbasis 1 kamera tunggal per stall.</p>
+                </div>
+                <div class="mt-4 md:mt-0 flex items-center gap-2">
+                    <span class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs border border-slate-700 font-mono">
+                        <i class="fa-solid fa-camera text-emerald-400 me-1"></i> Single Camera System
+                    </span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <!-- Interactive Barn Canvas Layout -->
+                <div class="lg:col-span-8 bg-slate-800/90 rounded-2xl p-6 border border-slate-700/80 relative overflow-hidden shadow-2xl">
+                    <!-- Top Info Tag -->
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-700 pb-3 text-xs font-mono text-slate-300">
+                        <span><i class="fa-solid fa-circle text-red-500 text-[8px] animate-pulse me-1.5"></i> CAM_ID: COW_STALL_01</span>
+                        <span id="currentActionText" class="text-emerald-400 font-bold">Status: Mendeteksi Kepala...</span>
+                    </div>
+
+                    <!-- Barn Visual Box -->
+                    <div class="relative w-full h-[360px] bg-slate-950 rounded-xl border border-slate-800 overflow-hidden flex items-center justify-center">
+                        <!-- Grid Overlay -->
+                        <div class="absolute inset-0 bg-grid-pattern opacity-20"></div>
+
+                        <!-- Top Feeding & Drinking Zones -->
+                        <div class="absolute top-4 left-6 right-6 h-28 flex gap-4">
+                            <!-- Green Zone: Feed Area -->
+                            <div class="flex-1 bg-emerald-500/20 border-2 border-dashed border-emerald-400 rounded-xl p-3 relative flex flex-col justify-between">
+                                <span class="bg-emerald-500/80 text-white text-[10px] font-bold px-2 py-0.5 rounded w-max uppercase tracking-wider">
+                                    <i class="fa-solid fa-wheat-awn me-1"></i> Zona Pakan (ROI A)
+                                </span>
+                                <div class="text-right text-emerald-300 text-xs font-mono">Green Zone</div>
+                            </div>
+
+                            <!-- Blue Zone: Water Area -->
+                            <div class="w-1/3 bg-sky-500/20 border-2 border-dashed border-sky-400 rounded-xl p-3 relative flex flex-col justify-between">
+                                <span class="bg-sky-500/80 text-white text-[10px] font-bold px-2 py-0.5 rounded w-max uppercase tracking-wider">
+                                    <i class="fa-solid fa-glass-water me-1"></i> Zona Minum (ROI B)
+                                </span>
+                                <div class="text-right text-sky-300 text-xs font-mono">Blue Zone</div>
+                            </div>
+                        </div>
+
+                        <!-- Cow Illustration Silhouette (Top View) -->
+                        <div class="absolute bottom-6 w-48 h-52 bg-slate-800 rounded-t-full border border-slate-700 flex flex-col items-center pt-4 text-slate-500">
+                            <i class="fa-solid fa-cow text-5xl text-slate-600 mb-2"></i>
+                            <span class="text-[10px] font-mono tracking-wider">BODY_AREA</span>
+                        </div>
+
+                        <!-- Simulated Red Dot (Cow Head Tracking Point) -->
+                        <div id="cowHead" class="absolute top-16 left-1/3 w-6 h-6 bg-red-500 rounded-full border-2 border-white pulse-red z-30 flex items-center justify-center">
+                            <span class="w-1.5 h-1.5 bg-white rounded-full"></span>
+                            <!-- Bounding Box Visual -->
+                            <div class="absolute -inset-3 border border-red-400/80 rounded border-dashed pointer-events-none"></div>
+                        </div>
+                    </div>
+
+                    <!-- Simulator Controls -->
+                    <div class="mt-6 flex flex-wrap items-center justify-between gap-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-slate-400">Simulasikan Gerakan:</span>
+                            <button onclick="moveCowHead('feed')" class="px-3 py-1.5 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/50 text-emerald-300 text-xs font-medium transition-all">
+                                <i class="fa-solid fa-utensils me-1"></i> Ke Zona Pakan
+                            </button>
+                            <button onclick="moveCowHead('water')" class="px-3 py-1.5 rounded-lg bg-sky-600/30 hover:bg-sky-600/50 border border-sky-500/50 text-sky-300 text-xs font-medium transition-all">
+                                <i class="fa-solid fa-faucet-drip me-1"></i> Ke Zona Minum
+                            </button>
+                            <button onclick="moveCowHead('rest')" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-medium transition-all">
+                                <i class="fa-solid fa-bed me-1"></i> Posisi Istirahat
+                            </button>
+                        </div>
+                        <button onclick="startAutoSim()" class="text-xs text-brand-light underline font-mono hover:text-white">
+                            <i class="fa-solid fa-play me-1"></i> Otomatisasi Loop
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Technical Notes -->
+                <div class="lg:col-span-4 space-y-4">
+                    <div class="bg-slate-800/60 p-5 rounded-xl border border-slate-700">
+                        <div class="flex items-center gap-3 text-emerald-400 font-bold text-sm mb-2">
+                            <i class="fa-solid fa-camera"></i> Single CCTV Overhead
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Kamera dipasang tepat di atas atau depan stall individu dengan sudut pandang tegak lurus untuk meminimalkan occlusion (penutupan objek).
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-800/60 p-5 rounded-xl border border-slate-700">
+                        <div class="flex items-center gap-3 text-emerald-400 font-bold text-sm mb-2">
+                            <i class="fa-solid fa-draw-polygon"></i> Bounding Box & Centroid Tracking
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Titik merah melambangkan <span class="text-red-400 font-mono">Centroid Kepala</span>. Ketika titik memasuki polygon ROI Pakan/Minum > 3 detik, durasi dihitung sebagai aktivitas prehensi/minum.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-800/60 p-5 rounded-xl border border-slate-700">
+                        <div class="flex items-center gap-3 text-sky-400 font-bold text-sm mb-2">
+                            <i class="fa-solid fa-microchip"></i> Komputasi Ringan
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed">
+                            Menggunakan model arsitektur lightweight (seperti YOLOv8-nano) sehingga dapat berjalan lancar pada perangkat Edge Computing lokal.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DASHBOARD MONITORING (STATS GRID) -->
+    <section id="dashboard" class="py-20 bg-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+                <div>
+                    <span class="text-brand-primary font-bold text-xs uppercase tracking-widest block mb-2">Real-Time Data Streams</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Dashboard Monitoring Perilaku</h2>
+                    <p class="text-slate-600 text-sm mt-1">Ringkasan statistik aktivitas harian sapi perah terpantau.</p>
+                </div>
+                <div class="mt-4 md:mt-0 flex items-center gap-2">
+                    <span class="text-xs text-slate-500 font-mono">Last updated: Just now</span>
+                </div>
+            </div>
+
+            <!-- 4 Key Stat Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <!-- Stat 1 -->
+                <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200 card-glow relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Kunjungan Pakan</span>
+                        <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                            <i class="fa-solid fa-utensils"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span id="statFeedFreq" class="text-3xl font-extrabold text-slate-900">0</span>
+                        <span class="text-xs font-semibold text-slate-500">kali / hari</span>
+                    </div>
+                    <p class="text-[11px] text-emerald-600 font-medium mt-2 flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-up"></i> +5% dari rata-rata populasi
+                    </p>
+                </div>
+
+                <!-- Stat 2 -->
+                <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200 card-glow relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Kunjungan Minum</span>
+                        <div class="w-10 h-10 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center">
+                            <i class="fa-solid fa-glass-water"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span id="statWaterFreq" class="text-3xl font-extrabold text-slate-900">0</span>
+                        <span class="text-xs font-semibold text-slate-500">kali / hari</span>
+                    </div>
+                    <p class="text-[11px] text-sky-600 font-medium mt-2 flex items-center gap-1">
+                        <i class="fa-solid fa-check"></i> Sesuai standar kebutuhan
+                    </p>
+                </div>
+
+                <!-- Stat 3 -->
+                <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200 card-glow relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Durasi Prehensi</span>
+                        <div class="w-10 h-10 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center">
+                            <i class="fa-solid fa-stopwatch"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span id="statPrehension" class="text-3xl font-extrabold text-slate-900">0</span>
+                        <span class="text-xs font-semibold text-slate-500">menit / hari</span>
+                    </div>
+                    <p class="text-[11px] text-teal-600 font-medium mt-2 flex items-center gap-1">
+                        <i class="fa-solid fa-clock"></i> ~3.9 Jam aktivitas makan
+                    </p>
+                </div>
+
+                <!-- Stat 4 -->
+                <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200 card-glow relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Status Sapi</span>
+                        <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                            <i class="fa-solid fa-heart-pulse"></i>
+                        </div>
+                    </div>
+                    <div class="mt-1">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Normal & Aktif
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-3">
+                        Pola makan stabil, tidak ada indikasi letargi.
+                    </p>
+                </div>
+            </div>
+
+            <!-- GRAFIK PERILAKU HARIAN (CHART.JS) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <!-- Bar Chart -->
+                <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-chart-column text-brand-primary"></i> Frekuensi Kunjungan Pakan & Minum
+                        </h3>
+                        <span class="text-xs text-slate-400 font-mono">Hari Ini (24 Jam)</span>
+                    </div>
+                    <div class="relative h-64">
+                        <canvas id="frequencyChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Line Chart -->
+                <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-brand-blue"></i> Trend Durasi Prehensi (7 Hari Terakhir)
+                        </h3>
+                        <span class="text-xs text-slate-400 font-mono">Menit / Hari</span>
+                    </div>
+                    <div class="relative h-64">
+                        <canvas id="prehensionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HEATMAP AKTIVITAS HARIAN -->
+            <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200 mb-12">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-2">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-fire text-amber-500"></i> Heatmap Intensitas Makan Harian (Jam 00:00 - 23:00)
+                        </h3>
+                        <p class="text-xs text-slate-500">Warna lebih gelap menunjukkan durasi makan lebih tinggi pada jam tersebut.</p>
+                    </div>
+                    <!-- Heatmap Legend -->
+                    <div class="flex items-center gap-2 text-xs text-slate-600 font-mono">
+                        <span>Rendah</span>
+                        <div class="flex h-3 w-20 rounded overflow-hidden">
+                            <span class="flex-1 bg-emerald-100"></span>
+                            <span class="flex-1 bg-emerald-300"></span>
+                            <span class="flex-1 bg-emerald-500"></span>
+                            <span class="flex-1 bg-brand-dark"></span>
+                        </div>
+                        <span>Tinggi</span>
+                    </div>
+                </div>
+
+                <!-- Heatmap Grid 24 Hours -->
+                <div id="heatmapGrid" class="grid grid-cols-6 sm:grid-cols-12 md:grid-cols-24 gap-2 text-center">
+                    <!-- Dynamic Grid generated via JS -->
+                </div>
+            </div>
+
+            <!-- SIMULASI TIMELINE AKTIVITAS (EVENT LOG) -->
+            <div class="glass-card p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-brand-primary"></i> Timeline Event Log Perilaku
+                        </h3>
+                        <p class="text-xs text-slate-500">Catatan kronologis deteksi otomatis masuk zona ROI</p>
+                    </div>
+                    <button onclick="addSimulatedEvent()" class="px-4 py-2 bg-brand-primary hover:bg-brand-dark text-white rounded-xl text-xs font-semibold shadow-md transition-all flex items-center gap-2 self-start sm:self-auto">
+                        <i class="fa-solid fa-plus"></i> Simulasikan Event Baru
+                    </button>
+                </div>
+
+                <div class="relative border-l-2 border-slate-200 ml-4 space-y-6" id="timelineContainer">
+                    <!-- Item 1 -->
+                    <div class="relative pl-6">
+                        <span class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white"></span>
+                        <div class="flex items-center gap-3">
+                            <span class="font-mono text-xs font-bold text-slate-500">06:30 WIB</span>
+                            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800">Kunjungan Pakan</span>
+                        </div>
+                        <p class="text-xs text-slate-600 mt-1">Sapi berada di Zona Pakan dengan durasi prehensi <span class="font-semibold text-slate-800">45 menit</span>.</p>
+                    </div>
+
+                    <!-- Item 2 -->
+                    <div class="relative pl-6">
+                        <span class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-sky-500 border-2 border-white"></span>
+                        <div class="flex items-center gap-3">
+                            <span class="font-mono text-xs font-bold text-slate-500">07:15 WIB</span>
+                            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-sky-100 text-sky-800">Kunjungan Minum</span>
+                        </div>
+                        <p class="text-xs text-slate-600 mt-1">Sapi berada di Zona Minum dengan durasi <span class="font-semibold text-slate-800">12 menit</span>.</p>
+                    </div>
+
+                    <!-- Item 3 -->
+                    <div class="relative pl-6">
+                        <span class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white"></span>
+                        <div class="flex items-center gap-3">
+                            <span class="font-mono text-xs font-bold text-slate-500">08:40 WIB</span>
+                            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800">Kunjungan Pakan</span>
+                        </div>
+                        <p class="text-xs text-slate-600 mt-1">Sapi berada di Zona Pakan dengan durasi prehensi <span class="font-semibold text-slate-800">38 menit</span>.</p>
+                    </div>
+
+                    <!-- Item 4 -->
+                    <div class="relative pl-6">
+                        <span class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-sky-500 border-2 border-white"></span>
+                        <div class="flex items-center gap-3">
+                            <span class="font-mono text-xs font-bold text-slate-500">10:10 WIB</span>
+                            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-sky-100 text-sky-800">Kunjungan Minum</span>
+                        </div>
+                        <p class="text-xs text-slate-600 mt-1">Sapi berada di Zona Minum dengan durasi <span class="font-semibold text-slate-800">15 menit</span>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- KEUNGGULAN METODE (4 CARDS) -->
+    <section id="keunggulan" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <span class="text-brand-primary font-bold text-xs uppercase tracking-widest block mb-2">Nilai Tambah Sistem</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Keunggulan Metode</h2>
+                <p class="text-slate-600 text-sm mt-2">Solusi praktis dan efisien untuk modernisasi peternakan perah</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Card 1 -->
+                <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 card-glow transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl font-bold mb-5">
+                        <i class="fa-solid fa-piggy-bank"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Murah & Hemat</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Hanya membutuhkan <span class="font-semibold text-slate-800">1 unit CCTV standar</span> per kandang individu tanpa perlunya sensor fisik yang mahal.
+                    </p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 card-glow transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-xl font-bold mb-5">
+                        <i class="fa-solid fa-copy"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Mudah Direplikasi</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Arsitektur modular yang sangat ideal untuk <span class="font-semibold text-slate-800">penelitian akademis mahasiswa</span> maupun penerapan skala peternakan rakyat.
+                    </p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 card-glow transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center text-xl font-bold mb-5">
+                        <i class="fa-solid fa-shield-heart"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Non-Invasif</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Pengamatan tanpa menyentuh atau memasang alat wearable pada tubuh sapi, sehingga <span class="font-semibold text-slate-800">bebas dari risiko stres</span>.
+                    </p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 card-glow transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-xl font-bold mb-5">
+                        <i class="fa-solid fa-chart-line-up"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Potensial Dikembangkan</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Dapat diekstensikan untuk indikasi awal <span class="font-semibold text-slate-800">kesehatan, pendeteksian estrus</span>, serta estimasi produksi susu.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- KESIMPULAN BANNER -->
+    <section class="py-16 bg-gradient-to-r from-brand-darker via-brand-dark to-slate-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white/5 border border-white/10 rounded-3xl p-8 sm:p-12 backdrop-blur-md">
+                <div class="max-w-3xl">
+                    <span class="text-emerald-400 font-mono text-xs uppercase tracking-widest font-bold block mb-2">Summary & Ringkasan</span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold mb-6">Kesimpulan Penelitian</h2>
+                    
+                    <div class="space-y-4 text-slate-300 text-sm sm:text-base">
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs mt-0.5 shrink-0">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <p>Sistem pemantauan perilaku berbasis Computer Vision berhasil mencatat frekuensi dan durasi makan/minum secara otomatis hanya dengan <span class="text-white font-semibold">1 kamera per kandang individu</span>.</p>
+                        </div>
+
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs mt-0.5 shrink-0">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <p>Sangat aplikatif dan ramah biaya untuk <span class="text-white font-semibold">penerapan di peternakan rakyat</span> serta riset lanjutan tingkat magister.</p>
+                        </div>
+
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs mt-0.5 shrink-0">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <p>Menjadi batu loncatan penting dalam mewujudkan ekosistem <span class="text-white font-semibold">Precision Dairy Farming</span> yang berbasis data objektif di Indonesia.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER AKADEMIK -->
+    <footer class="bg-slate-950 border-t border-slate-800 py-10 text-slate-400 text-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+                <p class="font-semibold text-slate-300">Tugas Kuliah Magister Peternakan - Universitas Diponegoro</p>
+                <p class="text-slate-500 mt-0.5">Disusun oleh: Bisri Abdillah | Precision Livestock Farming Research Group</p>
+            </div>
+            <div class="text-slate-500">
+                &copy; 2026 SmartDairy Vision Simulation. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT & SIMULATION LOGIC -->
+    <script>
+        // 1. STATS COUNTER ANIMATION
+        function animateCounter(id, target, duration = 2000) {
+            const obj = document.getElementById(id);
+            if(!obj) return;
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerText = Math.floor(progress * target);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Trigger Counter on Page Load
+        window.addEventListener('DOMContentLoaded', () => {
+            animateCounter('statFeedFreq', 42);
+            animateCounter('statWaterFreq', 15);
+            animateCounter('statPrehension', 237);
+            initCharts();
+            generateHeatmap();
+        });
+
+        // 2. BARN ROI SIMULATION MOVEMENT LOGIC
+        function moveCowHead(zone) {
+            const head = document.getElementById('cowHead');
+            const statusText = document.getElementById('currentActionText');
+            
+            if (zone === 'feed') {
+                head.style.top = '70px';
+                head.style.left = '30%';
+                statusText.innerText = "Status: Terdeteksi di ZONA PAKAN (ROI A)";
+                statusText.className = "text-emerald-400 font-bold";
+            } else if (zone === 'water') {
+                head.style.top = '70px';
+                head.style.left = '75%';
+                statusText.innerText = "Status: Terdeteksi di ZONA MINUM (ROI B)";
+                statusText.className = "text-sky-400 font-bold";
+            } else {
+                head.style.top = '220px';
+                head.style.left = '48%';
+                statusText.innerText = "Status: Posisi Istirahat / Di luar ROI";
+                statusText.className = "text-slate-400 font-bold";
+            }
+        }
+
+        let autoSimInterval = null;
+        function startAutoSim() {
+            if(autoSimInterval) {
+                clearInterval(autoSimInterval);
+                autoSimInterval = null;
+                document.getElementById('currentActionText').innerText = "Status: Simulasi Diberhentikan";
+                return;
+            }
+            const states = ['feed', 'water', 'rest', 'feed'];
+            let idx = 0;
+            autoSimInterval = setInterval(() => {
+                moveCowHead(states[idx]);
+                idx = (idx + 1) % states.length;
+            }, 2500);
+        }
+
+        // 3. CHART.JS INITIALIZATION
+        function initCharts() {
+            // Frequency Chart (Bar Chart)
+            const ctxFreq = document.getElementById('frequencyChart').getContext('2d');
+            new Chart(ctxFreq, {
+                type: 'bar',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                    datasets: [
+                        {
+                            label: 'Kunjungan Pakan',
+                            data: [3, 5, 12, 8, 10, 4],
+                            backgroundColor: '#2d6a4f',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Kunjungan Minum',
+                            data: [1, 2, 4, 3, 3, 2],
+                            backgroundColor: '#0284c7',
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Prehension Chart (Line Chart 7 Days)
+            const ctxPrehension = document.getElementById('prehensionChart').getContext('2d');
+            new Chart(ctxPrehension, {
+                type: 'line',
+                data: {
+                    labels: ['Hari 1', 'Hari 2', 'Hari 3', 'Hari 4', 'Hari 5', 'Hari 6', 'Hari 7'],
+                    datasets: [{
+                        label: 'Durasi Prehensi (Menit)',
+                        data: [210, 225, 240, 218, 250, 230, 237],
+                        borderColor: '#0284c7',
+                        backgroundColor: 'rgba(2, 132, 199, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#0369a1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        y: { beginAtZero: false, min: 180 }
+                    }
+                }
+            });
+        }
+
+        // 4. GENERATE HEATMAP GRID
+        function generateHeatmap() {
+            const grid = document.getElementById('heatmapGrid');
+            // Mock intensity values for 24 hours (0 to 3)
+            const intensities = [0,0,1,0,0,1, 3,3,2,1,2,3, 2,1,0,2,3,2, 1,1,0,0,1,0];
+            const bgClasses = ['bg-emerald-50 text-slate-400', 'bg-emerald-200 text-emerald-900', 'bg-emerald-400 text-white', 'bg-brand-dark text-white font-bold'];
+
+            intensities.forEach((val, hour) => {
+                const hourStr = hour < 10 ? `0${hour}` : `${hour}`;
+                const cell = document.createElement('div');
+                cell.className = `p-2 rounded-lg text-xs font-mono transition-transform hover:scale-110 cursor-pointer ${bgClasses[val]}`;
+                cell.innerHTML = `<div>${hourStr}</div><div class="text-[9px] opacity-75">${val * 15}m</div>`;
+                cell.title = `Jam ${hourStr}:00 - Estimasi makan ~${val * 15} menit`;
+                grid.appendChild(cell);
+            });
+        }
+
+        // 5. ADD SIMULATED NEW EVENT LOG
+        function addSimulatedEvent() {
+            const container = document.getElementById('timelineContainer');
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + " WIB";
+            
+            const isFeed = Math.random() > 0.4;
+            const type = isFeed ? "Kunjungan Pakan" : "Kunjungan Minum";
+            const duration = Math.floor(Math.random() * 20) + 5;
+            const colorClass = isFeed ? "bg-emerald-500" : "bg-sky-500";
+            const bgBadge = isFeed ? "bg-emerald-100 text-emerald-800" : "bg-sky-100 text-sky-800";
+
+            const newLog = document.createElement('div');
+            newLog.className = "relative pl-6 animate-fade-in";
+            newLog.innerHTML = `
+                <span class="absolute -left-[9px] top-1 w-4 h-4 rounded-full ${colorClass} border-2 border-white"></span>
+                <div class="flex items-center gap-3">
+                    <span class="font-mono text-xs font-bold text-slate-500">${timeStr}</span>
+                    <span class="px-2 py-0.5 rounded text-[11px] font-bold ${bgBadge}">${type}</span>
+                    <span class="text-[10px] font-mono text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">Simulasi Live</span>
+                </div>
+                <p class="text-xs text-slate-600 mt-1">Sapi terdeteksi berada di zona dengan durasi <span class="font-semibold text-slate-800">${duration} menit</span>.</p>
+            `;
+
+            container.insertBefore(newLog, container.firstChild);
+        }
+    </script>
+</body>
+</html>
